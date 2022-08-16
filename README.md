@@ -7,7 +7,7 @@ This repository made for RapidSearch introducing task
     docker-compose
 
 # How to run the app
-Add your own `hosts` file the following line
+Add the following line to your `hosts` file
 
     127.0.0.1       secret.local backend.secret.local express.secret.local
 
