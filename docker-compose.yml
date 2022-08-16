@@ -1,0 +1,64 @@
+version: '3.3'
+
+services:
+  nginx:
+    image: nginx:1.15-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/local:/etc/nginx/conf.d
+    links:
+      - backend:backend
+      - mongo-express:mongo-express
+      - frontend:frontend
+
+  frontend:
+    build: frontend/.
+    restart: always
+    privileged: true
+    volumes:
+      - ./frontend:/usr/app
+    ports:
+      - "3000:3000"
+    command: npm run start
+    links:
+      - backend:backend
+    depends_on:
+      - backend
+
+  backend:
+    build: backend/.
+    restart: always
+    volumes:
+      - ./backend:/usr/app
+    command: npm run dev
+    links:
+      - mongo:mongo
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_DATABASE: secrets
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongo-db:/data/db
+      - mongo-configdb:/data/configdb
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+
+volumes:
+  mongo-db:
+  mongo-configdb:
